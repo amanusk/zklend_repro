@@ -302,7 +302,7 @@ trait IKstrkPool<TContractState> {
 }
 
 #[starknet::interface]
-trait IERC20<TContractState> {
+pub trait IERC20<TContractState> {
     fn totalSupply(self: @TContractState) -> u256;
 
     fn decimals(self: @TContractState) -> felt252;
