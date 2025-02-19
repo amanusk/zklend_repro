@@ -135,7 +135,7 @@ pub trait IMarket<TContractState> {
 }
 
 #[starknet::interface]
-trait IZToken<TContractState> {
+pub trait IZToken<TContractState> {
     //
     // Getters
     //

